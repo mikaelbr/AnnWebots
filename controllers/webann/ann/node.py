@@ -1,10 +1,10 @@
 from arc import Arc
 
 class Node(object):
+
     """
         The ANN node class, holding the nodes current and previous activation level,
         and the membrane potential.
-
         Is a part of a layer, and uses that layers activation function to calculate
         the activation level.
     """
