@@ -1,6 +1,6 @@
 
 
-class node(object):
+class Node(object):
 
     def __init__(self):
         pass
