@@ -78,9 +78,11 @@ def column_avg(image,band='red'):
    a = kd_array.gen_array([x], init_elem = 0.0)
    for i in range(x):
       sum_band = 0
-      for j in range(y):
+      from_ = int(math.ceil(y*0.4))
+      to_ = int(math.floor(y*0.6))
+      for j in range(from_, to_):
          sum_band += func(image,i,j)
-      a[i] = float(sum_band)/float(y)
+      a[i] = float(sum_band)/float(to_-from_)
    return a
 
 def image_avg(image,band='red',scale = 1.0):
@@ -102,4 +104,19 @@ def map_image(image,func):
 	for j in range(y):
 	    a[i,j] = apply(func, [image.getpixel((i,j))])
     return a
+
+
+def split_list(list,columns):
+    length = len(list)
+    return [(sum(list[i*length // columns: (i+1)*length // columns])/(len(list)/columns)) for i in range(columns) ]
+
+
+def image_avg_extended(image):
+    reds = column_avg(image,'red')
+    greens = column_avg(image,'green')
+    blues = column_avg(image,'blue')
+    diff = [reds[i]-greens[i]-blues[i] for i,j in enumerate(reds)]
+    return diff
+
+
 
