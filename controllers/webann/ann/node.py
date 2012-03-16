@@ -1,4 +1,4 @@
-
+from arc import Arc
 
 class Node(object):
     """
@@ -21,9 +21,9 @@ class Node(object):
         """
             Reset all levels
         """
-        this.membrane_potential = 0
-        this._activation_level = 0 # bypass the property func.
-        this.prev_activation_level = 0
+        self.membrane_potential = 0
+        self._activation_level = 0 # bypass the property func.
+        self.prev_activation_level = 0
 
     @property
     def activation_level(self):
@@ -46,7 +46,7 @@ class Node(object):
         weighted_input = 0
 
         for arc in self.incomming:
-            con_node = 0 # arc.from # connecting node
+            con_node = arc.pre_node # connecting node
             if not con_node.layer.active:
                 continue
 
