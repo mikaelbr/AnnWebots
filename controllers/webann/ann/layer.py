@@ -1,21 +1,57 @@
 from math import exp
+from node import Node
+
 
 class Activation(object):
-    """
-        Class used to select the activation function. 
-    """
 
-    SIGMOID_LOG = 0
-    SIGMOID_TANH = 1
-    STEP = 2
-    LINEAR = 3
-    POS_LINEAR = 4
+    @staticmethod
+    def sigmoid_log(inpt):
+        """
+            A sigmoid logistic function, which outputs values in the range [0,1].
+        """
+        return 1.0/(1.0 + exp(-inpt))
+
+    @staticmethod
+    def sigmoid_tanh(inpt):
+        """
+            A sigmoid tanh function, which outputs values in the range [-1, 1].
+        """
+        e = exp(2*inpt)
+        return (e-1)/(e+1)
+
+    @staticmethod
+    def step(inpt, T = 0.5):
+        """
+            A step function with a threshold, T, that outputs values in the range [0,1]
+        """
+        return int(not inpt < T)
+
+    @staticmethod
+    def linear(inpt):
+        """
+            outputs the sum of weighted inputs
+        """
+        return inpt
+
+    @staticmethod
+    def pos_linear(inpt):
+        """
+            outputs the sum of weighted inputs when that sum is positive; otherwise it outputs a 0.
+        """
+        if inpt < 0:
+            return 0.0
+        return inpt
 
 class Layer(object):
+    """
+        The general layer class houses a collection of nodes along 
+        with several properties that pertain to each of them. It 
+        also includes information concerning the links for which 
+        it contributes pre-synaptic or post-synaptic neurons.
+    """
 
 
-
-    def __init__(self, nodes, activation_function = Activation.SIGMOID_LOG):
+    def __init__(self, nodes, activation_function = Activation.sigmoid_log):
         """
             1. the nodes that reside in the layer,
             2. the activation function shared by each of those nodes,
@@ -36,9 +72,11 @@ class Layer(object):
             8. the maximum number of settling rounds used for runs to quiescence.
         """
 
+        # If the number of nodes wished is passed as argument, create nodes
         if isinstance(nodes, int):
-            self.nodes = [Node(self) for x in range(nodes)]
+            self.nodes = [Node(self) for n in range(nodes)]
         else:
+            # List of nodes given. Set all to have current layer
             for node in nodes:
                 node.layer = self
 
@@ -61,19 +99,38 @@ class Layer(object):
 
 
 
-    def update(self):
+    def update(self, quiescent_mode=False):
 
         if not(self.active):
             return
 
-        # Check quiescent mode ?
-        # TODO: Implement quiescent mode
+        if not quiescent_mode or self.max_settling < 1:
+            # Not quiescent mode, update activation levels
+            for node in self.nodes:
+                node.activate()
 
-        # Not quiescent mode
-        for node in self.nodes:
-            node.activate()
+            return
+
+        # Is quiescent mode
+        prev = []
+        # Avoid infinite loop.
+        for i in range(self.max_settling):            
+            self.update(False) # Update
+
+            # Get current activation levels..
+            curr = [node.activation_level for node in self.nodes]
+
+            # Check for changes
+            if prev == curr:
+                break
+            
+            # Has changed. Run more
+            prev = curr
+
+        
 
     def activation_function (self, inpt):
+
         """
             Wrapper for the activation functions based 
             on the Activation type passed as argument
@@ -86,39 +143,26 @@ class Layer(object):
             the calculated activation level
         """
 
-        if self._activation_function_in == Activation.SIGMOID_LOG:
-            return self.sigmoid_log(inpt)
+        return self._activation_function_in(inpt)
 
-        if self._activation_function_in == Activation.SIGMOID_TANH:
-            return self.sigmoid_tanh(inpt)
+        # if self._activation_function_in == Activation.SIGMOID_LOG:
+        #     return self.sigmoid_log(inpt)
 
-        if self._activation_function_in == Activation.STEP:
-            return self.step(inpt)
+        # if self._activation_function_in == Activation.SIGMOID_TANH:
+        #     return self.sigmoid_tanh(inpt)
 
-        if self._activation_function_in == Activation.LINEAR:
-            return self.linear(inpt)
+        # if self._activation_function_in == Activation.STEP:
+        #     return self.step(inpt)
 
-        if self._activation_function_in == Activation.POS_LINEAR:
-            return self.pos_linear(inpt)
+        # if self._activation_function_in == Activation.LINEAR:
+        #     return self.linear(inpt)
 
-        raise ValueError('No valid activation function passed to the layer')
+        # if self._activation_function_in == Activation.POS_LINEAR:
+        #     return self.pos_linear(inpt)
+
+        # raise ValueError('No valid activation function passed to the layer')
 
 
+    # Activation functions
 
-    def sigmoid_log(self, inpt):
-        return 1.0/(1.0 + exp(-inpt))
-
-    def sigmoid_tanh(self, inpt):
-        e = exp(2*inpt)
-        return (e-1)/(e+1)
-
-    def step(self, inpt, T = 0.5):
-        return int(not inpt < T)
-
-    def linear(self, inpt):
-        return inpt
-
-    def pos_linear(self, inpt):
-        if inpt < 0:
-            return 0.0
-        return inpt
+    
