@@ -16,7 +16,7 @@ class Link(object):
         self.learning_rule = learning_rule
 
     def get_random_weight(self):
-        return random.randrange(self.arc_range_min, self.arc_range_max, 2)
+        return random.uniform(self.arc_range_min, self.arc_range_max)
 
     def generate_arcs(self,pre_nodes,post_nodes,connection_prob=0.2):
         """
