@@ -45,16 +45,21 @@ class Node(object):
         """
         weighted_input = 0
 
+        print "inne i activate"
+
         for arc in self.incomming:
             con_node = arc.pre_node # connecting node
             if not con_node.layer.active:
                 continue
 
-            if con_node.layer is self.layer:
-                weighted_input += con_node.prev_activation_level * arc.weight
-            else:
-                weighted_input += con_node.activation_level * arc.weight 
+            print "Her"
 
+            if con_node.layer is self.layer:
+                weighted_input += con_node.prev_activation_level * arc.current_weight
+            else:
+                weighted_input += con_node.activation_level * arc.current_weight 
+
+        print weighted_input
         self.membrane_potential = weighted_input
         self.activation_level = self.layer.activation_function(self.membrane_potential)
 

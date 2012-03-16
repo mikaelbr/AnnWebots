@@ -51,7 +51,7 @@ class Layer(object):
     """
 
 
-    def __init__(self, nodes, activation_function = Activation.sigmoid_log):
+    def __init__(self, name, nodes, activation_function = Activation.sigmoid_log, io_type=None):
         """
             1. the nodes that reside in the layer,
             2. the activation function shared by each of those nodes,
@@ -71,6 +71,8 @@ class Layer(object):
                 to downstream neurons.
             8. the maximum number of settling rounds used for runs to quiescence.
         """
+        self.name = name
+        self.type = io_type
 
         # If the number of nodes wished is passed as argument, create nodes
         if isinstance(nodes, int):
@@ -95,8 +97,6 @@ class Layer(object):
         # When summing the weighted inputs to a node, only include inputs 
         # from layers that are currently active.
         self.active = True
-
-
 
 
     def update(self, quiescent_mode=False):
@@ -144,25 +144,4 @@ class Layer(object):
         """
 
         return self._activation_function_in(inpt)
-
-        # if self._activation_function_in == Activation.SIGMOID_LOG:
-        #     return self.sigmoid_log(inpt)
-
-        # if self._activation_function_in == Activation.SIGMOID_TANH:
-        #     return self.sigmoid_tanh(inpt)
-
-        # if self._activation_function_in == Activation.STEP:
-        #     return self.step(inpt)
-
-        # if self._activation_function_in == Activation.LINEAR:
-        #     return self.linear(inpt)
-
-        # if self._activation_function_in == Activation.POS_LINEAR:
-        #     return self.pos_linear(inpt)
-
-        # raise ValueError('No valid activation function passed to the layer')
-
-
-    # Activation functions
-
     
