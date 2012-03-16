@@ -149,7 +149,5 @@ class Layer(object):
 
 
     # Activation functions
-
-l = Layer(8)
-l.update()
+    
     
