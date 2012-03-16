@@ -6,23 +6,38 @@ class Activation(object):
 
     @staticmethod
     def sigmoid_log(inpt):
+        """
+            A sigmoid logistic function, which outputs values in the range [0,1].
+        """
         return 1.0/(1.0 + exp(-inpt))
 
     @staticmethod
     def sigmoid_tanh(inpt):
+        """
+            A sigmoid tanh function, which outputs values in the range [-1, 1].
+        """
         e = exp(2*inpt)
         return (e-1)/(e+1)
 
     @staticmethod
     def step(inpt, T = 0.5):
+        """
+            A step function with a threshold, T, that outputs values in the range [0,1]
+        """
         return int(not inpt < T)
 
     @staticmethod
     def linear(inpt):
+        """
+            outputs the sum of weighted inputs
+        """
         return inpt
 
     @staticmethod
     def pos_linear(inpt):
+        """
+            outputs the sum of weighted inputs when that sum is positive; otherwise it outputs a 0.
+        """
         if inpt < 0:
             return 0.0
         return inpt
@@ -149,5 +164,5 @@ class Layer(object):
 
 
     # Activation functions
-    
+
     
