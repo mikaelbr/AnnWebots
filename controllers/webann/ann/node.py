@@ -14,8 +14,8 @@ class Node(object):
 
         self.reset_levels()
 
-        self.encoders = [] # input arcs
-        self.decoders = [] # output arcs
+        self.incomming = [] # input arcs
+        self.outgoing = [] # output arcs
 
     def reset_levels(self):
         """
@@ -45,7 +45,7 @@ class Node(object):
         """
         weighted_input = 0
 
-        for arc in self.encoders:
+        for arc in self.incomming:
             con_node = 0 # arc.from # connecting node
             if not con_node.layer.active:
                 continue
