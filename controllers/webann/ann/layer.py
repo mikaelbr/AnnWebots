@@ -4,12 +4,12 @@ class Activation(object):
     """
         Class used to select the activation function. 
     """
-
     SIGMOID_LOG = 0
     SIGMOID_TANH = 1
     STEP = 2
     LINEAR = 3
     POS_LINEAR = 4
+
 
 class Layer(object):
 
@@ -35,7 +35,6 @@ class Layer(object):
                 to downstream neurons.
             8. the maximum number of settling rounds used for runs to quiescence.
         """
-
         if isinstance(nodes, int):
             self.nodes = [Node(self) for x in range(nodes)]
         else:
@@ -61,17 +60,35 @@ class Layer(object):
 
 
 
-    def update(self):
+    def update(self, quiescent_mode=False):
 
         if not(self.active):
             return
 
-        # Check quiescent mode ?
-        # TODO: Implement quiescent mode
+        if not quiescent or self.max_settling < 1:
+            # Not quiescent mode, update activation levels
+            for node in self.nodes:
+                node.activate()
 
-        # Not quiescent mode
-        for node in self.nodes:
-            node.activate()
+            return
+
+        # Is quiescent mode
+        prev = []
+        # Avoid infinite loop.
+        for i in range(self.max_settling):            
+            self.update(False) # Update
+
+            # Get current activation levels..
+            curr = [node.activation_level for node in self.nodes]
+
+            # Check for changes
+            if prev == curr:
+                break
+            
+            # Has changed. Run more
+            prev = curr
+
+        
 
     def activation_function (self, inpt):
         """
@@ -104,6 +121,7 @@ class Layer(object):
         raise ValueError('No valid activation function passed to the layer')
 
 
+    # Activation functions
 
     def sigmoid_log(self, inpt):
         return 1.0/(1.0 + exp(-inpt))
