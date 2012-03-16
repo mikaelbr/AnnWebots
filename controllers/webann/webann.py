@@ -3,8 +3,9 @@
 
 import epuck2
 import epuck_basic as epb
-import graph
+#import graph
 import prims1
+from imagepro import *
 
 # The webann is a descendent of the webot "controller" class, and it has the ANN as an attribute.
 
@@ -20,19 +21,18 @@ class WebAnn(epb.EpuckBasic):
 
 
   def long_run(self,steps = 500):
-        self.ann.simsteps = steps
-
-        self.spin_angle(prims1.randab(0,360))
-        self.forward()
-        self.run_timestep(200)
-
-
-        self.ann.redman_run()
-    
+      self.ann.simsteps = steps
+      self.spin_angle(prims1.randab(0,360))
+      #self.backward()
+      self.run_timestep(200)
+      self.ann.redman_run()
+      image = self.snapshot()
+      img_avg= image_avg(image)
+      print "avg ", image_avg
 
 #*** MAIN ***
 # Webots expects a controller to be created and activated at the bottom of the controller file.
 
 controller = WebAnn(tempo = 1.0, band = 'gray')
-# controller.long_run(40)
-controller.run_toy()
+controller.long_run(40)
+#controller.run_toy()
