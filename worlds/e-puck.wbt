@@ -9,8 +9,8 @@ WorldInfo {
   runRealTime TRUE
 }
 Viewpoint {
-  orientation -0.561567 0.77848 0.280378 1.11319
-  position 1.15945 1.05102 1.32111
+  orientation -0.465292 0.767285 0.441335 1.7641
+  position 1.36455 1.44174 0.572273
 }
 PointLight {
   ambientIntensity 0.5
@@ -266,8 +266,7 @@ Solid {
   boundingObject USE WALL_SHAPE
 }
 DEF E_PUCK EPuck {
-  translation 0.787127 -0.000141106 0.95322
-  rotation -0.00981419 0.999951 0.0013963 0.419749
+  rotation -1.34403e-006 1 -8.53329e-006 3.13826
   controller "webann"
   name "e-puck camera"
   camera_windowPosition 0.75 0.75

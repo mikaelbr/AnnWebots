@@ -113,14 +113,14 @@ def split_list(list,columns):
     length = len(list)
     return [(sum(list[i*length // columns: (i+1)*length // columns])/(len(list)/columns)) for i in range(columns) ]
 
-def image_avg_extended(image,columns=5,color='blue'):
+def process_snapshot(image,columns=5,color='red'):
     rf = 1 if color =='red' else -1
-    gf = 1 if color =='blue' else -1
-    bf = 1 if color =='green' else -1
+    gf = 1 if color =='green' else -1
+    bf = 1 if color =='blue' else -1
     avg_red = column_avg(image,'red',y_scope_from=0.4,y_scope_to=0.6)
     avg_green= column_avg(image,'green',y_scope_from=0.4,y_scope_to=0.6)
     avg_blue = column_avg(image,'blue',y_scope_from=0.4,y_scope_to=0.6)
-    diff = [(avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf) for i,j in enumerate(avg_red)]
+    diff = [max(-1, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255)for i,j in enumerate(avg_red)]
     output = split_list(diff,columns)
     return output
 
