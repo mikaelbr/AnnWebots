@@ -154,13 +154,13 @@ class AnnParser(object):
 
         
         if use_updated_values:
-            cfg.set(section, 'weights', link.weights)
+            cfg.set(section, 'weights', link.export_weights())
 
         elif link.init_weights or use_updated_values:
             cfg.set(section, 'weights', link.init_weights)
 
         if use_updated_values:
-            cfg.set(section, 'arcs', link.arcs)
+            cfg.set(section, 'arcs', link.export_arcs())
 
         elif link.init_arcs:
             cfg.set(section, 'arcs', link.init_arcs)
@@ -201,9 +201,6 @@ class AnnParser(object):
             config.write(configfile)
 
 
-
-
-
 if __name__ == "__main__":
     """
         Test for reading from the script file
@@ -219,7 +216,6 @@ if __name__ == "__main__":
         nargs="*",
         default="scripts/static_ann.ini",
         help="Input ANN Script file")
-
 
     args = parser.parse_args()
 
