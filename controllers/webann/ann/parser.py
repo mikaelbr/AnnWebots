@@ -1,5 +1,4 @@
 import ConfigParser
-import pprint
 from functools import wraps, partial
 from layer import *
 from link import *
@@ -21,7 +20,10 @@ def fail(fn):
     @wraps(fn)
     def wrapper_fn(self, section, key, default):
         try:
-            return fn(self, section, key, default)
+            tmp = fn(self, section, key, default)
+            if tmp == "None" or not(tmp):
+                return None
+            return tmp
         except:
             return default
 
@@ -100,13 +102,14 @@ class AnnParser(object):
         name = section.replace("Layer ", "")
         io_type = self.get_string(section, "io_type", None)
         nodes = self.get_int(section, "nodes", None)
+
         activation_function = self.get_func(section, "activation", Activation.sigmoid_tanh)
         return Layer(name, nodes, activation_function=activation_function, io_type=io_type)
 
 
     def _parse_link(self, section):
-        pre = self.get_layer(layers, section, "pre")
-        post = self.get_layer(layers, section, "post")
+        pre = self.get_layer(self.layers, section, "pre")
+        post = self.get_layer(self.layers, section, "post")
         topology = self.get_string(section, "topology", None)
         learning_rate = self.get_float(section, "learning_rate", 0.2)
         learning_rule = self.get_string(section, "learning_rule", None)
@@ -117,6 +120,88 @@ class AnnParser(object):
 
     def parse_execution_order(self):
         return self.get_array("Execution Order", "order", [])
+
+    def create_ann(self):
+        self.extract_layers()
+        self.extract_links()
+
+        return Ann(self.layers, self.links, self.parse_execution_order())
+
+    @staticmethod
+    def reverse_func_lookup(fn):
+
+        for key, func in funcs.items():
+            if func == fn:
+                return key
+
+        return None
+
+    @staticmethod
+    def insert_link(cfg, link, i, use_updated_values = False):
+        section = 'Link %s' % i
+        cfg.add_section(section)
+
+        cfg.set(section, 'arc_range', str(link.arc_range))
+
+        if link.learning_rule:
+            cfg.set(section, 'learning_rule', link.learning_rule)
+
+        if link.learning_rate:
+            cfg.set(section, 'learning_rate', link.learning_rate)
+        
+        if link.topology:
+            cfg.set(section, 'topology', link.topology)
+
+        
+        if use_updated_values:
+            cfg.set(section, 'weights', link.weights)
+
+        elif link.init_weights or use_updated_values:
+            cfg.set(section, 'weights', link.init_weights)
+
+        if use_updated_values:
+            cfg.set(section, 'arcs', link.arcs)
+
+        elif link.init_arcs:
+            cfg.set(section, 'arcs', link.init_arcs)
+
+        cfg.set(section, 'post', link.post_layer.name)
+        cfg.set(section, 'pre', link.pre_layer.name)
+
+    @staticmethod
+    def insert_execution_order(cfg, execution_order):
+        section = 'Execution Order'
+        cfg.add_section(section)
+        cfg.set(section, 'order', str(execution_order))
+
+    @staticmethod
+    def insert_layer(cfg, layer):
+        section = 'Layer %s' % layer.name
+        cfg.add_section(section)
+        cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function))
+        cfg.set(section, 'nodes', len(layer.nodes))
+
+        if layer.type: 
+            cfg.set(section, 'io_type', layer.type)
+
+    @staticmethod
+    def export(ann, filename, use_updated_values = False):
+        config = ConfigParser.RawConfigParser()
+
+        for layer in ann.layers:
+            AnnParser.insert_layer(config, layer)
+
+        for i, link in enumerate(ann.links):
+            AnnParser.insert_link(config, link, i, use_updated_values)
+        
+        AnnParser.insert_execution_order(config, ann.execution_order)
+
+        # Writing our configuration file to 'filename'
+        with open(filename, 'wb') as configfile:
+            config.write(configfile)
+
+
+
 
 
 if __name__ == "__main__":
@@ -138,13 +223,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    ini_parse = AnnParser(args.script_ann)
+    # ini_parse = AnnParser(args.script_ann)
+    # gann = ini_parse.create_ann()
 
-    layers = ini_parse.extract_layers()
-    links = ini_parse.extract_links()
+    # AnnParser.export(gann, "scripts/test.ini")
 
-    gann = Ann(layers, links)
-    gann.execution_order = ini_parse.parse_execution_order()
+    ini_parse = AnnParser("scripts/test.ini")
+    gann = ini_parse.create_ann()
+
 
     def ra():
         return 1

@@ -51,7 +51,7 @@ class Layer(object):
     """
 
 
-    def __init__(self, name, nodes, activation_function = Activation.sigmoid_log, io_type=None):
+    def __init__(self, name, nodes, activation_function = Activation.sigmoid_tanh, io_type=None):
         """
             1. the nodes that reside in the layer,
             2. the activation function shared by each of those nodes,
@@ -83,7 +83,7 @@ class Layer(object):
                 node.layer = self
 
         # String representation of one of sigmoid (log/tanh), step and (pos_)linear
-        self._activation_function_in = activation_function
+        self.activation_function = activation_function
 
 
         # Standard values (filled afterwords)
@@ -97,6 +97,9 @@ class Layer(object):
         # When summing the weighted inputs to a node, only include inputs 
         # from layers that are currently active.
         self.active = True
+
+    def __str__(self):
+        return str(self.name)
 
 
     def update(self, quiescent_mode=False):
@@ -142,6 +145,5 @@ class Layer(object):
             Output:
             the calculated activation level
         """
-
-        return self._activation_function_in(inpt)
+        return self.activation_function(inpt)
     
