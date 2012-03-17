@@ -227,9 +227,9 @@ if __name__ == "__main__":
     ini_parse = AnnParser("scripts/test.ini")
     gann = ini_parse.create_ann()
 
-
+    import random
     def ra():
-        return 1
+        return random.random()
 
     print gann.recall([ra() for i in range(30)])
     print gann.recall([ra() for i in range(30)])

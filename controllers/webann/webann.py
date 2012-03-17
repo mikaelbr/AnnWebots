@@ -29,20 +29,23 @@ class WebAnn(epb.EpuckBasic):
 
         self.tempo = tempo
 
+    def scale_proximities(self, distances):
+        """Scale distance values between -1 and 1."""
+        return [max(-1, (1 - (i / 600))) for i in distances]
     
-    def run():
+    def run(self):
 
         while True: # main loop
 
             # Get input proximity and camera.
+            d = self.scale_proximities(self.get_proximities())
 
             # For testing, set random values.
-            l = sum([len(n) for n in self.ann.input_layers])
-            i = [random.random() for x in range(l)]
+            # i = d + [random.random() for x in range(5)]
 
-            left, right = self.ann.recall(l)
+            left, right = self.ann.recall(d)
 
-            self.move_wheels(left, right, ms = self.tempo)
+            self.move_wheels(left, right, self.tempo)
 
             if self.step(64) == -1: break
 
@@ -68,7 +71,7 @@ class WebAnn(epb.EpuckBasic):
 # Webots expects a controller to be created and activated at the bottom of the controller file.
 
 
-ini_parse = AnnParser("ann/scripts/test.ini")
+ini_parse = AnnParser("ann/scripts/distance.ini")
 gann = ini_parse.create_ann()
 
 controller = WebAnn(gann, tempo = 1.0)

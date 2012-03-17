@@ -61,10 +61,12 @@ class Link(object):
             
         connect = lambda pre_node, post_node: Arc(pre_node, post_node, link=self)
 
+        print self.topology
+
         if self.arcs:
             self.arcs = [connect(pre_nodes[i], post_nodes[j]) for i, j in self.arcs]
 
-        elif self.topology == '1-1':
+        elif self.topology == '1-1' or not(self.topology):
             self.arcs = [connect(pre_node, post_node) for j, pre_node in enumerate(pre_nodes) for i, post_node in enumerate(post_nodes) if i == j]
 
         elif self.topology == 'full':

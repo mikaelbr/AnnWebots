@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     import random
     def ra():
-        return 1
+        return random.random()
 
     print gann.recall([ra() for i in range(len(hidden.nodes))])
     print gann.recall([ra() for i in range(len(hidden.nodes))])
