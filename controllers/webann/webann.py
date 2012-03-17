@@ -51,7 +51,7 @@ class WebAnn(epb.EpuckBasic):
             left, right = self.ann.recall(i)
 
             self.move_wheels(left, right, self.tempo)
-
+            print process_snapshot(self.snapshot(),color="green")
             if self.step(64) == -1: break
 
 

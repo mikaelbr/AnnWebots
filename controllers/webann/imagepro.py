@@ -72,18 +72,22 @@ def avg_scalar_color(image):
     return sum/total
 
 # Returns an array of average band strengths, one per column.  band = red, green, blue, gray or bw(black-white)
-def column_avg(image,band='red'):
+def column_avg(image,band='red',y_scope_to=1,y_scope_from=0):
+   """
+    Extended with scope settings for Y-axis.
+   """
    x,y = image.size
    func = eval("get_"+band)
    a = kd_array.gen_array([x], init_elem = 0.0)
    for i in range(x):
       sum_band = 0
-      from_ = int(math.ceil(y*0.4))
-      to_ = int(math.floor(y*0.6))
+      from_ = int(math.ceil(y*y_scope_from))
+      to_ = int(math.floor(y*y_scope_to))
       for j in range(from_, to_):
          sum_band += func(image,i,j)
       a[i] = float(sum_band)/float(to_-from_)
    return a
+
 
 def image_avg(image,band='red',scale = 1.0):
    return kd_array.vector_avg(column_avg(image,band=band)) / scale
@@ -105,18 +109,18 @@ def map_image(image,func):
 	    a[i,j] = apply(func, [image.getpixel((i,j))])
     return a
 
-
 def split_list(list,columns):
     length = len(list)
     return [(sum(list[i*length // columns: (i+1)*length // columns])/(len(list)/columns)) for i in range(columns) ]
 
-
-def image_avg_extended(image):
-    reds = column_avg(image,'red')
-    greens = column_avg(image,'green')
-    blues = column_avg(image,'blue')
-    diff = [reds[i]-greens[i]-blues[i] for i,j in enumerate(reds)]
-    return diff
-
-
+def process_snapshot(image,columns=5,color='red'):
+    rf = 1 if color =='red' else -1
+    gf = 1 if color =='green' else -1
+    bf = 1 if color =='blue' else -1
+    avg_red = column_avg(image,'red',y_scope_from=0.4,y_scope_to=0.6)
+    avg_green= column_avg(image,'green',y_scope_from=0.4,y_scope_to=0.6)
+    avg_blue = column_avg(image,'blue',y_scope_from=0.4,y_scope_to=0.6)
+    diff = [max(-1, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255)for i,j in enumerate(avg_red)]
+    output = split_list(diff,columns)
+    return output
 

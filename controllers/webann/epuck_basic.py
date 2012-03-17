@@ -146,7 +146,7 @@ class EpuckBasic (DifferentialWheels):
 # The arguments "left" and "right" are in the range [-1,1].
 
   def set_wheel_speeds(self,left = 0.0, right = 0.0):
-      print "Setting wheel speeds: ", "Left =", left ,"  Right = ", right
+      #print "Setting wheel speeds: ", "Left =", left ,"  Right = ", right
       ms = self.tempo*self.max_wheel_speed
       self.setSpeed(int(left*ms),int(right*ms))
 
