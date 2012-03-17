@@ -154,7 +154,7 @@ DEF short_rock_3 Solid {
   boundingObject USE short_brick_1_geometry
 }
 DEF short_rock_4 Solid {
-  translation 0 0.05 0
+  translation -0.3 0.05 -0.8
   rotation 0 1 0 5.36782
   children [
     Shape {
@@ -266,8 +266,8 @@ Solid {
   boundingObject USE WALL_SHAPE
 }
 DEF E_PUCK EPuck {
-  translation 0.2 0 0.25
-  rotation 0 1 0 1.57
+  translation 0.787127 -0.000141106 0.95322
+  rotation -0.00981419 0.999951 0.0013963 0.419749
   controller "webann"
   name "e-puck camera"
   camera_windowPosition 0.75 0.75

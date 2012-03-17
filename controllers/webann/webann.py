@@ -1,10 +1,12 @@
-# This uses the EpuckBasic code as the interface to webots, and the epuck2 code to connect an ANN
+## This uses the EpuckBasic code as the interface to webots, and the epuck2 code to connect an ANN
 # to webots.
 
 import epuck2
 import epuck_basic as epb
-import graph
+#import graph
 import prims1
+from imagepro import *
+import Image
 
 # The webann is a descendent of the webot "controller" class, and it has the ANN as an attribute.
 
@@ -19,20 +21,26 @@ class WebAnn(epb.EpuckBasic):
     
 
 
-  def long_run(self,steps = 500):
-        self.ann.simsteps = steps
+  def long_run(self,steps = 1000):
+      #self.ann.simsteps = steps
+      #self.spin_angle(prims1.randab(0,360))
+      #
+      self.spin_angle(-70)
+      self.stop_moving()
+      self.backward()
+      self.run_timestep(200)
+      #self.ann.redman_run()
+      image = self.snapshot()
+     # print "avg_rgb " , avg_rgb(image)
 
-        self.spin_angle(prims1.randab(0,360))
-        self.forward()
-        self.run_timestep(200)
-
-
-        self.ann.redman_run()
-    
+      #img = Image.open()
+      #print "lengde ", len(column_avg(img))
+     # print
+      #print column_avg(image)
 
 #*** MAIN ***
 # Webots expects a controller to be created and activated at the bottom of the controller file.
 
 controller = WebAnn(tempo = 1.0, band = 'gray')
-# controller.long_run(40)
-controller.run_toy()
+controller.long_run(40)
+#controller.run_toy()
