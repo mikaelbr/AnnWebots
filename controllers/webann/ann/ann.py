@@ -22,9 +22,26 @@ class Ann(object):
             return
         self.initz = True
 
+        # Find nested layers and links
+        i = 0
+        while i < len(self.layers):
+            if hasattr(self.layers[i], 'links'):
+                for link in self.layers[i].links:
+                    if link not in self.links:
+                        self.links.append(link)
+
+            if hasattr(self.layers[i], 'layers'):
+                for layer in self.layers[i].layers:
+                    if layer not in self.layers:
+                        self.layers.append(layer)
+            i += 1
+
         # Find input and output
         self.input_nodes = []
         self.output_nodes = []
+
+        for link in self.links:
+            link.generate_arcs()
 
         for layer in self.layers:
             if layer.type is None:

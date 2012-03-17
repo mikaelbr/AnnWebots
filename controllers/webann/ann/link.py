@@ -6,7 +6,7 @@ from layer import *
 
 class Link(object):
 
-    def __init__(self, pre_layer, post_layer, topology=None, 
+    def __init__(self, pre_layer = None, post_layer = None, topology=None, 
                 arc_range=[-0.1, 0.1], learning_rate=0.2, 
                 weights=None, arcs=None,
                 learning_rule = None):
@@ -23,8 +23,6 @@ class Link(object):
 
         self.weights = weights
         self.init_weights = weights # for using in export
-
-        self.generate_arcs()
 
     def get_random_weight(self):
         return random.uniform(*self.arc_range)
