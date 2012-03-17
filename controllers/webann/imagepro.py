@@ -120,7 +120,10 @@ def process_snapshot(image,columns=5,color='red'):
     avg_red = column_avg(image,'red',y_scope_from=0.4,y_scope_to=0.6)
     avg_green= column_avg(image,'green',y_scope_from=0.4,y_scope_to=0.6)
     avg_blue = column_avg(image,'blue',y_scope_from=0.4,y_scope_to=0.6)
-    diff = [max(-1, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255)for i,j in enumerate(avg_red)]
+
+    diff = [(max(0, min(1, ((avg_green[i] - ((avg_red[i] + avg_blue[i]) / 2)) / 90)))) for i,j in enumerate(avg_red)]
+
+    #diff = [max(-1, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255)for i,j in enumerate(avg_red)]
     output = split_list(diff,columns)
     return output
 

@@ -37,22 +37,27 @@ class WebAnn(epb.EpuckBasic):
     
     def run(self):
 
+        self.spin(100)
+        self.forward(1)
+
         while True: # main loop
 
             # Get input proximity and camera.
             dist = (self.get_proximities())
-            print dist
+            # print dist
 
             d = self.scale_proximities(dist)
-            print d
+            # print d
             # For testing, set random values.
-            i = d + [random.random() for x in range(5)]
+            foo = process_snapshot(self.snapshot(),color="red")
+            i = d + foo
+
+            print i
 
             left, right = self.ann.recall(i)
 
             self.move_wheels(left, right, self.tempo)
-            print process_snapshot(self.snapshot(),color="green")
-            if self.step(64) == -1: break
+            if self.step(64/2) == -1: break
 
 
     def long_run(self,steps = 1000):

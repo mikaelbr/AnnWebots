@@ -40,9 +40,6 @@ class Ann(object):
         self.input_nodes = []
         self.output_nodes = []
 
-        for link in self.links:
-            link.generate_arcs()
-
         for layer in self.layers:
             if layer.type is None:
                 continue
@@ -59,6 +56,9 @@ class Ann(object):
                         for layer in self.layers}
         self.execution_order = [layer_order[str(layer).lower()] 
                         for i, layer in enumerate(self.execution_order)]
+
+        for link in self.links:
+            link.generate_arcs()
 
         # Fill up layers not in execution order list. 
         if len(self.execution_order) < len(self.layers):
