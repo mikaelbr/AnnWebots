@@ -8,6 +8,7 @@ from ann import Ann
 funcs = {
     'log': Activation.sigmoid_log,
     'tanh': Activation.sigmoid_tanh,
+    'step': Activation.step,
     'step_0': partial(Activation.step, T=0),
     'step_5': partial(Activation.step, T=0.5),
     'step_8': partial(Activation.step, T=0.8),
@@ -71,6 +72,12 @@ class AnnParser(object):
     @fail
     def get_func(self, section, key, default):
         str_repr = self.config.get(section, key)
+
+        if str_repr == "step":
+            step_v = self.get_int(section, "step", 0.5)
+            return partial(Activation.step, T=step_v)
+
+
         return funcs[str_repr]
 
     @fail
@@ -131,6 +138,7 @@ class AnnParser(object):
     def reverse_func_lookup(fn):
 
         for key, func in funcs.items():
+            print "Func: %s . FN: %s" % (func, fn)
             if func == fn:
                 return key
 
@@ -172,13 +180,21 @@ class AnnParser(object):
     def insert_execution_order(cfg, execution_order):
         section = 'Execution Order'
         cfg.add_section(section)
-        cfg.set(section, 'order', str(execution_order))
+        cfg.set(section, 'order', str([i.name for i in execution_order]))
 
     @staticmethod
     def insert_layer(cfg, layer):
         section = 'Layer %s' % layer.name
         cfg.add_section(section)
-        cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function))
+
+        if hasattr(layer.activation_function, 'func'):
+            # Is a partial
+            cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function.func))
+            cfg.set(section, 'step', int(layer.activation_function.keywords['T']))
+            
+        else:
+            cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function))
+
         cfg.set(section, 'nodes', len(layer.nodes))
 
         if layer.type: 

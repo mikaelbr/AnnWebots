@@ -109,21 +109,30 @@ def map_image(image,func):
 	    a[i,j] = apply(func, [image.getpixel((i,j))])
     return a
 
-def split_list(list,columns):
-    length = len(list)
-    return [(sum(list[i*length // columns: (i+1)*length // columns])/(len(list)/columns)) for i in range(columns) ]
+def split_list(li,columns):
+    length = len(li)
+    return [(sum(li[i*length // columns: (i+1)*length // columns])/(len(li)/columns)) for i in range(columns) ]
 
 def process_snapshot(image,columns=5,color='red'):
-    rf = 1 if color =='red' else -1
-    gf = 1 if color =='green' else -1
-    bf = 1 if color =='blue' else -1
+
+
     avg_red = column_avg(image,'red',y_scope_from=0.4,y_scope_to=0.6)
     avg_green= column_avg(image,'green',y_scope_from=0.4,y_scope_to=0.6)
     avg_blue = column_avg(image,'blue',y_scope_from=0.4,y_scope_to=0.6)
 
-    diff = [(max(0, min(1, ((avg_green[i] - ((avg_red[i] + avg_blue[i]) / 2)) / 90)))) for i,j in enumerate(avg_red)]
+    diff = []
+    for i in range(len(avg_red)):
 
-    #diff = [max(-1, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255)for i,j in enumerate(avg_red)]
+      if color == 'red':
+        f = (max(0, min(1, ((avg_red[i] - ((avg_blue[i] + avg_green[i]) / 2)) / 90))))
+      elif color == "green":
+        f = (max(0, min(1, ((avg_green[i] - ((avg_blue[i] + avg_red[i]) / 2)) / 90))))
+      else:
+        f = (max(0, min(1, ((avg_blue[i] - ((avg_green[i] + avg_red[i]) / 2)) / 90))))
+
+      diff.append(f)
+
+    # diff = [max(0, ((avg_red[i]*rf)+(avg_green[i]*gf)+(avg_blue[i]*bf))/255.0)for i,j in enumerate(avg_red)]
     output = split_list(diff,columns)
     return output
 

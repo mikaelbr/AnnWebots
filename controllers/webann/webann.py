@@ -35,29 +35,57 @@ class WebAnn(epb.EpuckBasic):
         """Scale distance values between -1 and 1."""
         return [max(-1, (1 - (i / 600))) for i in distances]
     
+
+    def set_wheel_speeds(self, left=0, right=0):
+        """Set the speed of the wheels."""
+        ms = self.tempo * 1000
+        self.setSpeed(int(left * ms), int(right * ms))
+
     def run(self):
 
-        self.spin(100)
-        self.forward(1)
+        self.spin_angle(180)
+        # self.forward(1)
 
         while True: # main loop
 
-            # Get input proximity and camera.
-            dist = (self.get_proximities())
-            # print dist
+            # # Get input proximity and camera.
+            # dist = (self.get_proximities())
+            # # print dist
 
-            d = self.scale_proximities(dist)
+            d = self.scale_proximities(self.get_proximities())
+            # d = [1- i for i in self.scale_proximities(self.get_proximities())]
+
+            print "Distance"
+            print d
+
             # print d
             # For testing, set random values.
-            foo = process_snapshot(self.snapshot(),color="red")
+            foo = process_snapshot(self.snapshot(),color="green")
+
+            print "COlors"
+            print foo
+
             i = d + foo
 
-            print i
+            bar = self.ann.recall(i)
+            print bar
+            left, right = bar
 
-            left, right = self.ann.recall(i)
+            obstruction = self.ann.layer_mapped['stop']
 
-            self.move_wheels(left, right, self.tempo)
-            if self.step(64/2) == -1: break
+            print "Activation value"
+            for n in obstruction.nodes:
+                print n.activation_level
+
+            obstruction = self.ann.layer_mapped['obstructions']
+
+            print "Activation value"
+            for n in obstruction.nodes:
+                print n.activation_level
+
+            self.set_wheel_speeds(left, right)
+
+            if self.step(self.timestep) == -1: break
 
 
     def long_run(self,steps = 1000):
@@ -78,7 +106,29 @@ class WebAnn(epb.EpuckBasic):
         #print column_avg(image)
 
 #*** MAIN ***
-# Webots expects a controller to be created and activated at the bottom of the controller file.
+# # Webots expects a controller to be created and activated at the bottom of the controller file.
+
+# # Layers
+# cam = Layer("Camera", 5, io_type='input')
+# hidden = Layer("Hidden", 3)
+# wheels = Layer("Wheels", 2, io_type="output")
+
+# link1 = Link(cam, hidden, 
+#     weights=[1, 0.5, 0.5, 1.0, 0.5, 0.5, 1], 
+#     arcs=[(0,0), (1,0), (1,1), (2,1), (3,1), (3,2), (4,2)])
+
+# link2 = Link(hidden, wheels, topology="full", weights= [0.4, 0.6, 0.5, .5, .6, .4])
+
+# layers = [cam, hidden, wheels]
+# links = [link1, link2]
+
+# # Execution order
+# ann = Ann(layers, links)
+# ann.execution_order = layers
+
+# ini_parse = AnnParser("ann/scripts/distance.ini")
+# gann = ini_parse.create_ann()
+
 
 # Layers
 dist = Layer("Distance", 8, io_type='input')
@@ -119,8 +169,8 @@ w_up = Link(actions, wheels, "full",
 ann = Ann(layers, [s_up, o_up, o_down, d_down, c_down, w_up])
 ann.execution_order = layers
 
-# ini_parse = AnnParser("ann/scripts/distance.ini")
-# gann = ini_parse.create_ann()
+AnnParser.export(ann, "ann/scripts/static.ini")
+
 
 controller = WebAnn(ann, tempo = 1.0)
 controller.run()

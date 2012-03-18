@@ -23,18 +23,19 @@ class Ann(object):
         self.initz = True
 
         # Find nested layers and links
-        i = 0
-        while i < len(self.layers):
-            if hasattr(self.layers[i], 'links'):
-                for link in self.layers[i].links:
+        for i in self.layers + self.links:
+
+            if hasattr(i, 'links'):
+                for link in i.links:
                     if link not in self.links:
                         self.links.append(link)
 
-            if hasattr(self.layers[i], 'layers'):
-                for layer in self.layers[i].layers:
+
+            if hasattr(i, 'layers'):
+                for layer in i.layers:
                     if layer not in self.layers:
                         self.layers.append(layer)
-            i += 1
+
 
         # Find input and output
         self.input_nodes = []
@@ -54,6 +55,9 @@ class Ann(object):
         # Fix execution order. 
         layer_order = {layer.name.lower(): layer 
                         for layer in self.layers}
+
+        self.layer_mapped = layer_order
+
         self.execution_order = [layer_order[str(layer).lower()] 
                         for i, layer in enumerate(self.execution_order)]
 

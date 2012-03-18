@@ -59,6 +59,7 @@ class Node(object):
                 weighted_input += con_node.activation_level * arc.current_weight 
 
         self.membrane_potential = weighted_input
+        # print self.membrane_potential
         self.activation_level = self.layer.activation_function(self.membrane_potential)
 
 
