@@ -51,7 +51,7 @@ class Layer(object):
     """
 
 
-    def __init__(self, name, nodes, activation_function = Activation.sigmoid_tanh, io_type=None):
+    def __init__(self, name, nodes, activation_function = None, io_type=None):
         """
             1. the nodes that reside in the layer,
             2. the activation function shared by each of those nodes,
@@ -89,9 +89,9 @@ class Layer(object):
         # Standard values (filled afterwords)
         self.entering = []
         self.exiting = []
-        self.learning_mode = True
+        self.learning_mode = False
 
-        self.quiescent_mode = True
+        self.quiescent_mode = False
         self.max_settling = 0
 
         # When summing the weighted inputs to a node, only include inputs 
@@ -102,7 +102,10 @@ class Layer(object):
         return str(self.name)
 
 
-    def update(self, quiescent_mode=False):
+    def update(self, quiescent_mode=None):
+
+        if quiescent_mode == None:
+            quiescent_mode = self.quiescent_mode
 
         if not(self.active):
             return
@@ -130,7 +133,33 @@ class Layer(object):
             # Has changed. Run more
             prev = curr
 
-        
+    def derivate(self, node):
+        """
+            Derivative of the activation function for back-propagation.
+        """
+        a = node.activation_level
+
+        if self.activation_function == Activation.sigmoid_log:
+            # P(t) * (1 - P(t)) where P(t) is the logistic function
+            return a * (1 - a)
+
+        elif self.activation_function == Activation.sigmoid_tanh:
+            # 1 - tanh^2 (x)
+            return 1 - (Activation.sigmoid_tanh(a) ** 2)
+
+        elif self.activation_function == Activation.step or hasattr(self.activation_function, func):
+            # Can't derivate descrete functions
+            return 0.0
+
+        else:
+            
+            if self.activation_function == Activation.pos_linear:
+                # TODO: OK?
+                if a < 0:
+                    return 0.0
+
+            # Linear and positive linear
+            return 1.0
 
     def activation_function (self, inpt):
 
@@ -146,4 +175,12 @@ class Layer(object):
             the calculated activation level
         """
         return self.activation_function(inpt)
+
+    def reset_for_training(self):
+        """Reset the layer for training."""
+        self.learning_mode = True
+
+    def reset_for_testing(self):
+        """Reset the layer for testing."""
+        self.learning_mode = False
     

@@ -3,6 +3,7 @@ from arc import *
 from node import *
 from link import *
 from functools import partial
+from operator import itemgetter
 
 
 class Ann(object):
@@ -69,6 +70,35 @@ class Ann(object):
             self.execution_order.extend([l for l in self.layers if l not in self.execution_order])
 
 
+        # Find link learning order for back propagation
+        all_arcs = [] # To make sure each arc is visited once
+        for link in self.links:
+            all_arcs.extend(link.arcs)
+        
+        current = self.output_nodes
+        distance = 0 # Distance from output layers
+        order = {} # Links and their largest distance
+        while all_arcs and current:
+            next_ = []
+            for node in current:
+                for link in node.layer.entering:
+                    for arc in link.arcs:
+                        if arc in all_arcs:
+                            all_arcs.remove(arc)
+                            next_.append(arc.pre_node)
+                            order[link] = distance
+            current = next_
+            distance += 1
+
+        items = sorted(order.items(), key=itemgetter(1))
+        self.learning_order = [l for l, i in items]
+
+        # Is it possible for nodes to not contribute to output?
+        for link in self.links:
+            if link not in self.learning_order:
+                self.learning_order.append(link)
+
+
     def recall(self, inputs):
         """
             Sets input and update all nodes
@@ -82,6 +112,66 @@ class Ann(object):
             layer.update()
 
         return self.get_output()
+
+    def reset(self):
+        """
+            Reset all nodes and arcs in the ANN.
+        """
+        for layer in self.layers:
+            for node in layer.nodes:
+                node.reset_levels()
+
+        for link in self.links:
+            for arc in link.arcs:
+                arc.reset()
+
+    def training(self, inputs):
+        """
+            Perform one epoch of unsupervised training.
+        """
+
+        self.init_nodes()
+        self.set_inputs(inputs)
+
+        for layer in self.execution_order:
+            layer.update()
+
+        for link in self.learning_order:
+            link.learn()
+
+        return self.get_output()
+
+    def back_propagation(self, inputs, targets):
+        """Perform one epoch of incremental back propagation learning."""
+        self.init_nodes()
+        self.set_inputs(inputs)
+
+        for layer in self.execution_order:
+            layer.update()
+
+        for link in self.learning_order:
+            link.back_propagation(targets, self.output_nodes)
+
+        return self.get_output()
+
+    def testing(self, inputs, targets):
+        """
+            Test without learning the inputs, returns the error.
+        """
+
+        wheels = self.recall(inputs)
+
+        return sum([(targets[i] - wheels[i])**2 for i in range(len(targets))])
+
+    def reset_for_training(self):
+        """Reset the ANN for training."""
+        for i in self.layers:
+            i.reset_for_training()
+
+    def reset_for_testing(self):
+        """Reset the ANN for testing."""
+        for i in self.layers:
+            i.reset_for_testing()
 
 
     def set_inputs(self, inputs):

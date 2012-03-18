@@ -96,6 +96,12 @@ class Inhibitory(Module):
 
     def __init__(self, name, activation_function=None,
                 neg=-1, pos=1, up=None, down=None):
+
+        self.neg = neg
+        self.pos = pos
+        self.up = up.pre_layer
+        self.down = down.post_layer
+
         """Create a new inhibitory module.
 
         'name' is the name of the inhibitory layer.
@@ -308,6 +314,6 @@ class Transformer(Module):
             down = Link()
 
         down.pre_layer = self
-        
+
         self.links.append(down)
 

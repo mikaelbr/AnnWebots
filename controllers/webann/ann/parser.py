@@ -3,6 +3,7 @@ from functools import wraps, partial
 from layer import *
 from link import *
 from ann import Ann
+from ann_modules import *
 
 
 funcs = {
@@ -38,6 +39,7 @@ class AnnParser(object):
 
         self.layer_sections = [s for s in self.config.sections() if s.startswith("Layer")]
         self.link_sections = [s for s in self.config.sections() if s.startswith("Link")]
+        self.inhibitory_sections = [s for s in self.config.sections() if s.startswith("Inhibitory")]
         self.execution_order = [s for s in self.config.sections() if s == "Execution Order"]
 
 
@@ -55,6 +57,12 @@ class AnnParser(object):
 
         for sec in self.link_sections:
             self.links.append(self._parse_link(sec))
+
+    def extract_modules(self):
+        print "HSDA"
+        for sec in self.inhibitory_sections:
+            print "Her"
+            self.layers.append(self._parse_inhibitory(sec))
 
 
     @fail
@@ -74,7 +82,9 @@ class AnnParser(object):
         str_repr = self.config.get(section, key)
 
         if str_repr == "step":
-            step_v = self.get_int(section, "step", 0.5)
+            step_v = self.get_float(section, "step", 0.5) 
+            step_v = step_v if step_v else 0
+
             return partial(Activation.step, T=step_v)
 
 
@@ -111,7 +121,25 @@ class AnnParser(object):
         nodes = self.get_int(section, "nodes", None)
 
         activation_function = self.get_func(section, "activation", Activation.sigmoid_tanh)
+
+        print "Name: %s , nodes: %s, activ: %s, io_type: %s" % (name, nodes, activation_function, io_type)
+        if hasattr(activation_function, 'func'):
+            print "%s - %s" % (activation_function.func, activation_function.keywords['T'])
+
         return Layer(name, nodes, activation_function=activation_function, io_type=io_type)
+
+    def _parse_inhibitory(self, section):
+        name = section.replace("Inhibitory ", "")
+        neg = self.get_float(section, "neg", -4)
+        pos = self.get_float(section, "pos", 0.1)
+
+        up = self.get_layer(self.layers, section, "up")
+        down = self.get_layer(self.layers, section, "down")
+
+        activation_function = self.get_func(section, "activation", Activation.step)
+
+        print "Name: %s , activ: %s, neg: %s, pos: %s, up: %s, down: %s" % (name, activation_function, neg, pos, up, down)
+        return Inhibitory(name, activation_function=activation_function, neg=neg, pos=pos, up=Link(pre_layer=up), down=Link(post_layer=down))
 
 
     def _parse_link(self, section):
@@ -123,14 +151,27 @@ class AnnParser(object):
         arc_range = self.get_array(section, "arc_range", [-0.1, 0.1])
         weights = self.get_array(section, "weights", None)
         arcs = self.get_array(section, "arcs", None)
+
+        print "pre: %s, post: %s, topo: %s, arc_range: %s, learning_rate: %s, weights: %s, arcs: %s, learning_rule: %s" % (pre, post, topology, arc_range, learning_rate, weights, arcs, learning_rule)
         return Link(pre, post, topology, arc_range, learning_rate, weights, arcs, learning_rule)
 
     def parse_execution_order(self):
-        return self.get_array("Execution Order", "order", [])
+        d = self.get_array("Execution Order", "order", [])
+        print d
+        return d
 
     def create_ann(self):
         self.extract_layers()
+
+        self.extract_modules()
+
         self.extract_links()
+
+        # for l in self.layers:
+        #     print str(l)
+
+        # for l in self.links:
+        #     print "%s : %s" % (l.pre_layer, l.post_layer)
 
         return Ann(self.layers, self.links, self.parse_execution_order())
 
@@ -190,8 +231,8 @@ class AnnParser(object):
         if hasattr(layer.activation_function, 'func'):
             # Is a partial
             cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function.func))
-            cfg.set(section, 'step', int(layer.activation_function.keywords['T']))
-            
+            cfg.set(section, 'step', float(layer.activation_function.keywords['T']))
+
         else:
             cfg.set(section, 'activation', AnnParser.reverse_func_lookup(layer.activation_function))
 
@@ -201,11 +242,34 @@ class AnnParser(object):
             cfg.set(section, 'io_type', layer.type)
 
     @staticmethod
+    def insert_inhibitory(cfg, module):
+
+        section = 'Inhibitory %s' % module.name
+        cfg.add_section(section)
+
+        if hasattr(module.activation_function, 'func'):
+            # Is a partial
+            cfg.set(section, 'activation', AnnParser.reverse_func_lookup(module.activation_function.func))
+            cfg.set(section, 'step', float(module.activation_function.keywords['T']))
+
+        else:
+            cfg.set(section, 'activation', AnnParser.reverse_func_lookup(module.activation_function))
+
+        cfg.set(section, "neg", module.neg)
+        cfg.set(section, "pos", module.pos)
+        cfg.set(section, "up", module.up.name)
+        cfg.set(section, "down", module.down.name)
+
+
+    @staticmethod
     def export(ann, filename, use_updated_values = False):
         config = ConfigParser.RawConfigParser()
 
         for layer in ann.layers:
-            AnnParser.insert_layer(config, layer)
+            if hasattr(layer, "links"):
+                AnnParser.insert_inhibitory(config, layer)
+            else:
+                AnnParser.insert_layer(config, layer)
 
         for i, link in enumerate(ann.links):
             AnnParser.insert_link(config, link, i, use_updated_values)
