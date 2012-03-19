@@ -17,6 +17,12 @@ funcs = {
     'pos_linear': Activation.pos_linear
 }
 
+rules = {
+    'hebbian': LearningRule.hebbian,
+    'general_hebb': LearningRule.general_hebb,
+    'oja': LearningRule.oja
+}
+
 def fail(fn):
 
     @wraps(fn)
@@ -59,9 +65,7 @@ class AnnParser(object):
             self.links.append(self._parse_link(sec))
 
     def extract_modules(self):
-        print "HSDA"
         for sec in self.inhibitory_sections:
-            print "Her"
             self.layers.append(self._parse_inhibitory(sec))
 
 
@@ -89,6 +93,11 @@ class AnnParser(object):
 
 
         return funcs[str_repr]
+
+    @fail
+    def get_rule(self, section, key, default):
+        str_repr = self.config.get(section, key)
+        return rules[str_repr]
 
     @fail
     def get_array(self, section, key, default):
@@ -121,11 +130,6 @@ class AnnParser(object):
         nodes = self.get_int(section, "nodes", None)
 
         activation_function = self.get_func(section, "activation", Activation.sigmoid_tanh)
-
-        print "Name: %s , nodes: %s, activ: %s, io_type: %s" % (name, nodes, activation_function, io_type)
-        if hasattr(activation_function, 'func'):
-            print "%s - %s" % (activation_function.func, activation_function.keywords['T'])
-
         return Layer(name, nodes, activation_function=activation_function, io_type=io_type)
 
     def _parse_inhibitory(self, section):
@@ -138,7 +142,6 @@ class AnnParser(object):
 
         activation_function = self.get_func(section, "activation", Activation.step)
 
-        print "Name: %s , activ: %s, neg: %s, pos: %s, up: %s, down: %s" % (name, activation_function, neg, pos, up, down)
         return Inhibitory(name, activation_function=activation_function, neg=neg, pos=pos, up=Link(pre_layer=up), down=Link(post_layer=down))
 
 
@@ -147,18 +150,15 @@ class AnnParser(object):
         post = self.get_layer(self.layers, section, "post")
         topology = self.get_string(section, "topology", None)
         learning_rate = self.get_float(section, "learning_rate", 0.2)
-        learning_rule = self.get_string(section, "learning_rule", None)
+        learning_rule = self.get_rule(section, "learning_rule", LearningRule.general_hebb)
         arc_range = self.get_array(section, "arc_range", [-0.1, 0.1])
         weights = self.get_array(section, "weights", None)
         arcs = self.get_array(section, "arcs", None)
 
-        print "pre: %s, post: %s, topo: %s, arc_range: %s, learning_rate: %s, weights: %s, arcs: %s, learning_rule: %s" % (pre, post, topology, arc_range, learning_rate, weights, arcs, learning_rule)
         return Link(pre, post, topology, arc_range, learning_rate, weights, arcs, learning_rule)
 
     def parse_execution_order(self):
-        d = self.get_array("Execution Order", "order", [])
-        print d
-        return d
+        return self.get_array("Execution Order", "order", [])
 
     def create_ann(self):
         self.extract_layers()
@@ -167,19 +167,21 @@ class AnnParser(object):
 
         self.extract_links()
 
-        # for l in self.layers:
-        #     print str(l)
-
-        # for l in self.links:
-        #     print "%s : %s" % (l.pre_layer, l.post_layer)
-
         return Ann(self.layers, self.links, self.parse_execution_order())
 
     @staticmethod
     def reverse_func_lookup(fn):
 
         for key, func in funcs.items():
-            print "Func: %s . FN: %s" % (func, fn)
+            if func == fn:
+                return key
+
+        return None
+
+    @staticmethod
+    def reverse_rule_lookup(fn):
+
+        for key, func in rules.items():
             if func == fn:
                 return key
 
@@ -193,7 +195,7 @@ class AnnParser(object):
         cfg.set(section, 'arc_range', str(link.arc_range))
 
         if link.learning_rule:
-            cfg.set(section, 'learning_rule', link.learning_rule)
+            cfg.set(section, 'learning_rule', reverse_rule_lookup(link.learning_rule))
 
         if link.learning_rate:
             cfg.set(section, 'learning_rate', link.learning_rate)

@@ -2,14 +2,9 @@
 # to webots.
 
 import epuck_basic as epb
-import prims1
 from imagepro import *
-import Image
 
 import random
-
-from functools import partial
-
 from ann.layer import *
 from ann.link import *
 from ann.ann import Ann
@@ -40,8 +35,7 @@ class WebAnn(epb.EpuckBasic):
 
     def run(self):
         
-        self.forward(1)
-        self.spin_angle(180)
+        self.spin_angle(-30)
 
         while True: # main loop
             dist = [max(-1, (1 - (i / 600))) for i in self.get_proximities()]
@@ -54,61 +48,61 @@ class WebAnn(epb.EpuckBasic):
             print "Camera"
             print cam
 
-            self.drive_speed(*self.ann.recall(inputs))
+            wheels = self.ann.recall(inputs)
+            print "Drive Speed:"
+            print wheels
+            self.drive_speed(*wheels)
 
             if self.step(self.timestep) == -1: break
 
 
-class Static(WebAnn):
+class HardWired(WebAnn):
 
     def __init__(self, ann, tempo = 1.0):
 
-        super(Static, self).__init__(ann, tempo)
-        self.ann.reset_for_training()
+        super(HardWired, self).__init__(ann, tempo)
+        self.ann.reset_for_testing()
 
 
-class Learning(WebAnn):
-    """A robot with backprop learning from a datafile."""
+class BackProp(WebAnn):
+    """
+        Off-line training of robot with back propagation.
+        Reading from a file with targets.
+    """
 
-    def __init__(self, ann, learn=True):
+    def __init__(self, ann, tempo = 1.0, training_file = 'data/test.txt', epochs=5000):
 
-        super(Learning, self).__init__(ann)
+        super(BackProp, self).__init__(ann, tempo)
 
-        self.ann.reset_for_training()
+        self.ann.reset_for_learning()
+        self.get_data(training_file)
+        self.do_prop(epochs)
+        self.ann.reset_for_testing()
 
-        if learn:
-            self.learning('data/learning.txt', epochs=5000)
-            self.ann.reset_for_testing()
-
-    def learning(self, data_file, epochs=1):
-        # Read inputs and targets from datafile
+    def get_data(self, training_file):
         self.data = []
 
-        with open(data_file, 'r') as f:
+        with open(training_file, 'r') as f:
             for line in f.readlines():
                 self.data.append(eval(line))
 
-        # Add forward cases
-        tmp = [[1]*(self.num_dist_sensors) + [0]*5, (1, 1)]
-        self.data.extend([tmp for i in range(len(self.data)/4)])
 
-        # Run back-propagation learning
-        t = time.time()
-        print "Performing %i epochs of back propagation learning" % epochs
+    def do_prop(self, epochs=1):        
+        print "Training robot using back propagation"
+
         for i in range(epochs):
             inputs, target = self.data[i % len(self.data)]
+            # Do prop
             self.ann.back_propagation(inputs, target)
 
-        print "Finished in %.2f secs, ANN is ready" % (time.time() - t)
+        print "Done using back propagation\nRun robot! Run!"
 
 
-
-
-# ann = AnnParser("ann/scripts/static.ini").create_ann()
-# controller = Static(ann, tempo = 1.0)
+# ann = AnnParser("ann/scripts/headwired.ini").create_ann()
+# controller = HardWired(ann, tempo = 1.0)
 
 ann = AnnParser("ann/scripts/learning.ini").create_ann()
-controller = Learning(ann)
+controller = BackProp(ann)
 
 
 controller.run()

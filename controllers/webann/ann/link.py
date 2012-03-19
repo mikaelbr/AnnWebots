@@ -14,7 +14,7 @@ class LearningRule(object):
         return rate * (pre - threshold) * (post - threshold)
 
     @staticmethod
-    def oja_rule(arc, rate, pre, post):
+    def oja(arc, rate, pre, post):
         return rate * pre * (post - (pre * arc.current_weight))
 
 class Link(object):
@@ -86,7 +86,6 @@ class Link(object):
         elif self.topology == 'triangulate':
             self.arcs = [connect(pre_node, post_node) for j, pre_node in enumerate(pre_nodes) for i, post_node in enumerate(post_nodes) if i != j]
 
-
         elif self.topology == '2-1':
             lena, lenb = len(pre_nodes), len(post_nodes)
             self.arcs = [connect(pre_nodes[i % lena], post_nodes[(i+j) % lenb] ) for j in range(2) for i in range(max(lena, lenb))]
@@ -108,8 +107,10 @@ class Link(object):
         return self.arcs
 
     def learn(self):
-        """Adjust weights of the links arcs."""
-        # Active node layers only?
+        """
+            Use the learning rule to alter weights
+            of arcs. 
+        """        
         
         if self.learning_rate and self.post_layer.learning_mode:
             for arc in self.arcs:
@@ -119,26 +120,28 @@ class Link(object):
 
     def back_propagation(self, targets, outputs):
         """
-            Adjust weights by back incremental propagation learning.
+            Using back propagation 
+
+            1. Instruct the link's post-synaptic layer to update 
+                its delta values.
+
+            2. Propagate these post-synaptic deltas (multiplied by 
+                the respective arc weights) to the pre-synaptic layer.
+
+            3. Modify the arc weights using the post-synaptic delta values.
+
         """
 
-        # Active node layers only?
-        if not self.learning_rate:
-            return
-
-
-        # Step 1: Calcualte post synaptic deltas
+        # 1.
         for node in self.post_layer.nodes:
-
-            if node.layer.type == "output":
+            if node.layer.type and node.layer.type.lower() == "output":
                 delta = targets[outputs.index(node)] - node.activation_level
-
             else:
                 delta = node._delta
 
             node._delta = node.layer.derivate(node) * delta
-        
-        # Step 2: Back up pre synaptic deltas
+
+        # 2.
         for node in self.pre_layer.nodes:
             delta = 0
 
@@ -147,22 +150,8 @@ class Link(object):
 
             node._delta = delta
 
-        # Step 3: Adjust weights
+        # 3.
+        diff_val = lambda a: (self.learning_rate * a.pre_node.activation_level * a.post_node._delta)
         for arc in self.arcs:
-            arc.current_weight += (self.learning_rate *
-                            arc.pre_node.activation_level * 
-                            arc.post_node._delta)
+            arc.current_weight += diff_val(arc)
 
-
-
-
-
-def main():
-    print '___TESTING___'
-    post_nodes = [i for i in range(6)]
-    pre_nodes = [i for i in range(6)]
-    link = Link("layer 1","Layer 2","stochastic",0,100,0.5,"back prop")
-    arcs = link.generate_arcs(post_nodes,pre_nodes,0.1)
-    print len(arcs)
-if __name__ == '__main__':
-    main()

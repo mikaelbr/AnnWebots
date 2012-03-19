@@ -16,6 +16,8 @@ class Node(object):
         self.incomming = [] # input arcs
         self.outgoing = [] # output arcs
 
+        # self._delta = 0
+
     def reset_levels(self):
         """
             Reset all levels
@@ -47,7 +49,6 @@ class Node(object):
 
         weighted_input = 0
 
-
         for arc in self.incomming:
             con_node = arc.pre_node # connecting node
             if not con_node.layer.active:
@@ -59,8 +60,8 @@ class Node(object):
                 weighted_input += con_node.activation_level * arc.current_weight 
 
         self.membrane_potential = weighted_input
-        # print self.membrane_potential
         self.activation_level = self.layer.activation_function(self.membrane_potential)
+
 
 
 

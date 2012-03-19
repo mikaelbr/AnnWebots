@@ -147,7 +147,7 @@ class Layer(object):
             # 1 - tanh^2 (x)
             return 1 - (Activation.sigmoid_tanh(a) ** 2)
 
-        elif self.activation_function == Activation.step or hasattr(self.activation_function, func):
+        elif self.activation_function == Activation.step or hasattr(self.activation_function, 'func'):
             # Can't derivate descrete functions
             return 0.0
 
@@ -176,8 +176,8 @@ class Layer(object):
         """
         return self.activation_function(inpt)
 
-    def reset_for_training(self):
-        """Reset the layer for training."""
+    def reset_for_learning(self):
+        """Reset the layer for learning."""
         self.learning_mode = True
 
     def reset_for_testing(self):
