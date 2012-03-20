@@ -91,7 +91,7 @@ class BackProp(WebAnn):
         print "Done using back propagation\nRun robot! Run!"
 
 
-ann = AnnParser("ann/scripts/hardwired2.ini").create_ann()
+ann = AnnParser("ann/scripts/ann.ini").create_ann()
 # ann.set_testing_mode()
 # controller = WebAnn(ann, tempo = 1.0)
 
