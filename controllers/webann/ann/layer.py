@@ -74,7 +74,7 @@ class Layer(object):
         self.name = name
         self.type = io_type
 
-        # If the number of nodes wished is passed as argument, create nodes
+        # 1. If the number of nodes wished is passed as argument, create nodes
         if isinstance(nodes, int):
             self.nodes = [Node(self) for n in range(nodes)]
         else:
@@ -82,11 +82,14 @@ class Layer(object):
             for node in nodes:
                 node.layer = self
 
-        # String representation of one of sigmoid (log/tanh), step and (pos_)linear
+        # 2. Referance of one of sigmoid (log/tanh), step and (pos_)linear
         self.activation_function = activation_function
 
+        # 7. When summing the weighted inputs to a node, only include inputs 
+        # from layers that are currently active.
+        self.active = True
 
-        # Standard values (filled afterwords)
+        # 3., 4., 5., 6., 8. Standard values (filled afterwords)
         self.entering = []
         self.exiting = []
         self.learning_mode = False
@@ -94,13 +97,8 @@ class Layer(object):
         self.quiescent_mode = False
         self.max_settling = 0
 
-        # When summing the weighted inputs to a node, only include inputs 
-        # from layers that are currently active.
-        self.active = True
-
     def __str__(self):
         return str(self.name)
-
 
     def update(self, quiescent_mode=None):
 
@@ -149,17 +147,10 @@ class Layer(object):
 
         elif self.activation_function == Activation.step or hasattr(self.activation_function, 'func'):
             # Can't derivate descrete functions
-            return 0.0
+            return 0.0        
 
-        else:
-            
-            if self.activation_function == Activation.pos_linear:
-                # TODO: OK?
-                if a < 0:
-                    return 0.0
-
-            # Linear and positive linear
-            return 1.0
+        # Linear and positive linear
+        return 1.0
 
     def activation_function (self, inpt):
 
@@ -176,11 +167,11 @@ class Layer(object):
         """
         return self.activation_function(inpt)
 
-    def reset_for_learning(self):
+    def set_learning_mode(self):
         """Reset the layer for learning."""
         self.learning_mode = True
 
-    def reset_for_testing(self):
+    def set_testing_mode(self):
         """Reset the layer for testing."""
         self.learning_mode = False
     

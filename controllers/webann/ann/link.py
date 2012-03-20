@@ -118,7 +118,7 @@ class Link(object):
                         arc.pre_node.activation_level,
                         arc.post_node.activation_level)
 
-    def back_propagation(self, targets, outputs):
+    def backprop(self, targets, outputs):
         """
             Using back propagation 
 
@@ -134,19 +134,15 @@ class Link(object):
 
         # 1.
         for node in self.post_layer.nodes:
-            if node.layer.type and node.layer.type.lower() == "output":
-                delta = targets[outputs.index(node)] - node.activation_level
-            else:
-                delta = node._delta
+            if node.layer.type and node.layer.type.lower() == "decoder":
+                delta = targets[outputs.index(node)] - node.activation_level  
+            else: delta = node._delta
 
             node._delta = node.layer.derivate(node) * delta
 
         # 2.
         for node in self.pre_layer.nodes:
-            delta = 0
-
-            for arc in node.outgoing:
-                delta += arc.current_weight * arc.post_node._delta
+            delta = sum([arc.current_weight * arc.post_node._delta for arc in node.outgoing ])
 
             node._delta = delta
 

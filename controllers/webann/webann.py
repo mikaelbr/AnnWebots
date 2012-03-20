@@ -35,7 +35,7 @@ class WebAnn(epb.EpuckBasic):
 
     def run(self):
         
-        self.spin_angle(-30)
+        self.spin_angle(30)
 
         while True: # main loop
             dist = [max(-1, (1 - (i / 600))) for i in self.get_proximities()]
@@ -49,20 +49,13 @@ class WebAnn(epb.EpuckBasic):
             print cam
 
             wheels = self.ann.recall(inputs)
+            
             print "Drive Speed:"
             print wheels
+
             self.drive_speed(*wheels)
 
             if self.step(self.timestep) == -1: break
-
-
-class HardWired(WebAnn):
-
-    def __init__(self, ann, tempo = 1.0):
-
-        super(HardWired, self).__init__(ann, tempo)
-        self.ann.reset_for_testing()
-
 
 class BackProp(WebAnn):
     """
@@ -98,8 +91,9 @@ class BackProp(WebAnn):
         print "Done using back propagation\nRun robot! Run!"
 
 
-# ann = AnnParser("ann/scripts/headwired.ini").create_ann()
-# controller = HardWired(ann, tempo = 1.0)
+# ann = AnnParser("ann/scripts/hardwired.ini").create_ann()
+# ann.reset_for_testing()
+# controller = WebAnn(ann, tempo = 1.0)
 
 ann = AnnParser("ann/scripts/learning.ini").create_ann()
 controller = BackProp(ann)

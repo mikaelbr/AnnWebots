@@ -17,24 +17,6 @@ class Ann(object):
         self.initz = False
 
 
-    def init_nodes(self):
-
-        if self.initz: # Avoid multiple initializations
-            return
-        self.initz = True
-
-        self.append_intra_layers()
-
-        self.create_encoders_decoders()
-        
-        self.extract_execution_order()
-
-        # Generate all arc weights. 
-        for link in self.links:
-            link.generate_arcs()
-
-        self.find_link_order()
-
     def extract_execution_order(self):
          # Fix execution order. 
         layer_order = {layer.name.lower(): layer for layer in self.layers}
@@ -55,12 +37,29 @@ class Ann(object):
             if layer.type is None:
                 continue
 
-            if layer.type.lower() == "input":
+            if layer.type.lower() == "encoder":
                 self.input_nodes.extend(layer.nodes)
 
-            elif layer.type.lower() == "output":
+            elif layer.type.lower() == "decoder":
                 self.output_nodes.extend(layer.nodes)
 
+    def init_nodes(self):
+
+        if self.initz: # Avoid multiple initializations
+            return
+        self.initz = True
+
+        self.append_intra_layers()
+
+        self.create_encoders_decoders()
+        
+        self.extract_execution_order()
+
+        # Generate all arc weights. 
+        for link in self.links:
+            link.generate_arcs()
+
+        self.find_link_order()
 
     def append_intra_layers(self):
         """
@@ -105,17 +104,19 @@ class Ann(object):
                             all_arcs.remove(arc)
                             next_.append(arc.pre_node)
                             order[link] = distance
+
+
             current = next_
             distance += 1
 
         # Sort by distance
         items = sorted(order.items(), key=itemgetter(1))
-        self.learning_order = [l for l, i in items]
+        self.link_order_learn = [l for l, i in items]
 
         # Append other nodes.
         for link in self.links:
-            if link not in self.learning_order:
-                self.learning_order.append(link)
+            if link not in self.link_order_learn:
+                self.link_order_learn.append(link)
 
 
 
@@ -126,12 +127,12 @@ class Ann(object):
             Returns output node values.
         """
         self.init_nodes()
-        self.set_inputs(inputs)
+        self.set_input(inputs)
 
         for layer in self.execution_order:
             layer.update()
 
-        return self.get_output()
+        return self.get_result()
 
     def reset(self):
         """
@@ -145,37 +146,37 @@ class Ann(object):
             for arc in link.arcs:
                 arc.reset()
 
-    def learning(self, inputs):
+    def learn(self, inputs):
         """
             Do one iteration/epoch of learning,
             no back propagation, using learning rules
         """
 
         self.init_nodes()
-        self.set_inputs(inputs)
+        self.set_input(inputs)
 
         for layer in self.execution_order:
             layer.update()
 
-        for link in self.learning_order:
+        for link in self.link_order_learn:
             link.learn()
 
-        return self.get_output()
+        return self.get_result()
 
-    def back_propagation(self, inputs, targets):
+    def backprop(self, inputs, targets):
         """Perform one epoch of incremental back propagation learning."""
         self.init_nodes()
-        self.set_inputs(inputs)
+        self.set_input(inputs)
 
         for layer in self.execution_order:
             layer.update()
 
-        for link in self.learning_order:
-            link.back_propagation(targets, self.output_nodes)
+        for link in self.link_order_learn:
+            link.backprop(targets, self.output_nodes)
 
-        return self.get_output()
+        return self.get_result()
 
-    def testing(self, inputs, targets):
+    def test(self, inputs, targets):
         """
             Test without learning the inputs, returns the error.
         """
@@ -184,27 +185,27 @@ class Ann(object):
 
         return sum([(targets[i] - output[i])**2 for i in range(len(targets))])
 
-    def reset_for_learning(self):
+    def set_learning_mode(self):
         """
             Set all layers to learning mode. 
         """
         for i in self.layers:
-            i.reset_for_learning()
+            i.set_learning_mode()
 
-    def reset_for_testing(self):
+    def set_testing_mode(self):
         """
             No learning. only do testing. 
         """
         for i in self.layers:
-            i.reset_for_testing()
+            i.set_testing_mode()
 
 
-    def set_inputs(self, inputs):
+    def set_input(self, inputs):
         """
             Set activation level for input nodes.
         """
         for i, node in enumerate(self.input_nodes):
             node.activation_level = inputs[i]
 
-    def get_output(self):
+    def get_result(self):
         return [n.activation_level for n in self.output_nodes]

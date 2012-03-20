@@ -115,10 +115,12 @@ def split_list(li,columns):
 
 def process_snapshot(image,columns=5,color='red'):
 
+    cut_top = .4
+    cut_bot = .6
 
-    avg_red = column_avg(image,'red',y_scope_from=0.4,y_scope_to=0.6)
-    avg_green= column_avg(image,'green',y_scope_from=0.4,y_scope_to=0.6)
-    avg_blue = column_avg(image,'blue',y_scope_from=0.4,y_scope_to=0.6)
+    avg_red = column_avg(image,'red',y_scope_from=cut_top,y_scope_to=cut_bot)
+    avg_green= column_avg(image,'green',y_scope_from=cut_top,y_scope_to=cut_bot)
+    avg_blue = column_avg(image,'blue',y_scope_from=cut_top,y_scope_to=cut_bot)
 
     diff = []
     for i in range(len(avg_red)):
