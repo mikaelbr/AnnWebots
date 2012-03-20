@@ -67,10 +67,10 @@ class BackProp(WebAnn):
 
         super(BackProp, self).__init__(ann, tempo)
 
-        self.ann.reset_for_learning()
+        self.ann.set_learning_mode()
         self.get_data(training_file)
         self.do_prop(epochs)
-        self.ann.reset_for_testing()
+        self.ann.set_testing_mode()
 
     def get_data(self, training_file):
         self.data = []
@@ -86,16 +86,16 @@ class BackProp(WebAnn):
         for i in range(epochs):
             inputs, target = self.data[i % len(self.data)]
             # Do prop
-            self.ann.back_propagation(inputs, target)
+            self.ann.backprop(inputs, target)
 
         print "Done using back propagation\nRun robot! Run!"
 
 
-# ann = AnnParser("ann/scripts/hardwired.ini").create_ann()
-# ann.reset_for_testing()
+ann = AnnParser("ann/scripts/hardwired2.ini").create_ann()
+# ann.set_testing_mode()
 # controller = WebAnn(ann, tempo = 1.0)
 
-ann = AnnParser("ann/scripts/learning.ini").create_ann()
+# ann = AnnParser("ann/scripts/learning.ini").create_ann()
 controller = BackProp(ann)
 
 
