@@ -46,12 +46,13 @@ ann.execution_order = layers
 # Do training
 ann.set_learning_mode()
 
-epochs = 50000
+epochs = 1000
 # Learn
 
 # Run back-propagation learning
 t = time.time()
-print "Performing %i epochs of back propagation learning" % epochs
+
+print "Training"
 for i in range(epochs):
     inputs, target = data[i % len(data)]
     ann.learn(inputs)
@@ -59,8 +60,6 @@ for i in range(epochs):
     # print ann.test(inputs, target)
     # print l1.export_weights()
     # print l2.export_weights()
-
-print "Finished in %.2f secs, ANN is ready" % (time.time() - t)
 
 print l1.export_weights()
 print l2.export_weights()
