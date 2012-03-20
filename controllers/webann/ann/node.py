@@ -16,8 +16,6 @@ class Node(object):
         self.incomming = [] # input arcs
         self.outgoing = [] # output arcs
 
-        # self._delta = 0
-
     def reset_levels(self):
         """
             Reset all levels
