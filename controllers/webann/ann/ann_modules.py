@@ -2,24 +2,7 @@
 from layer import *
 from link import *
 
-
-class Module(Layer):
-    """
-        A base class for complex layers with links.
-        
-        An ANN module is a collection of links and additional layers.
-        Links which serve as upstream or downstream to the layer can be
-        provided as partial links, otherwise the module will create them
-        as partial links, and users must them self complete these.
-    """
-
-    def __init__(self, *args, **vargs):
-        super(Module, self).__init__(*args, **vargs)
-        self.layers = []
-        self.links = []
-
-
-class Competitive(Module):
+class Competitive(Layer):
     """
         Competitive network layers are characterized by neurons that have
         inhibitory intra-layer effects but either excitatory or inhibitory
@@ -57,6 +40,9 @@ class Competitive(Module):
 
         super(Competitive, self).__init__(name, nodes, activation_function)
 
+        self.layers = []
+        self.links = []
+
         # 2.
         self.links.append(Link(self, self, "triangulate", learning_rate=0, weights=([neg] * len(self.nodes))))
 
@@ -83,7 +69,7 @@ class Competitive(Module):
         self.max_settling = rounds
         
 
-class Inhibitory(Module):
+class Inhibitory(Layer):
     """
     The inhibitor module simply integrates all upstream excitation
     and converts it into inhibition, which it sends downstream.
@@ -120,6 +106,9 @@ class Inhibitory(Module):
 
         super(Inhibitory, self).__init__(name, 1, activation_function)
 
+        self.layers = []
+        self.links = []
+
         # 2.
         if up is None:
             up = Link()
@@ -147,7 +136,7 @@ class Inhibitory(Module):
 
 
 
-class Associative(Module):
+class Associative(Layer):
     """
     Associative modules are designed for pattern storage and retrieval.
     The neurons of the the central associative layer are fully connected
@@ -184,6 +173,9 @@ class Associative(Module):
             activation_function = Activation.step
 
         super(Associative, self).__init__(name, nodes, activation_function)
+
+        self.layers = []
+        self.links = []
 
         # 2.
         if rule is None:
@@ -229,20 +221,20 @@ class Associative(Module):
         
         self.max_settling = rounds
     
-    def reset_for_training(self):
-        """Reset the module for training."""
+    def set_training_mode(self):
+
         super(Associative, self).reset_for_training()
         self.inhibitor.active = False
         self.quiescent_mode = False
 
-    def reset_for_testing(self):
-        """Reset the module for testing."""
+    def set_testing_mode(self):
+
         super(Associative, self).reset_for_testing()
         self.inhibitor.active = True
         self.quiescent_mode = True
 
 
-class Transformer(Module):
+class Transformer(Layer):
    
     def __init__(self, name, nodes, activation_function, up=None, down=None):
         """
@@ -254,6 +246,9 @@ class Transformer(Module):
         the downstream neighbor.
         """
         super(Transformer, self).__init__(name, nodes, activation_function)
+
+        self.layers = []
+        self.links = []
         
         # Upstream link
         if up is None:

@@ -43,16 +43,16 @@ class WebAnn(epb.EpuckBasic):
             cam = process_snapshot(self.snapshot(),color="green")
             inputs = dist + cam
 
-            print "Distance"
-            print dist
+            # print "Distance"
+            # print dist
 
-            print "Camera"
-            print cam
+            # print "Camera"
+            # print cam
 
             wheels = self.ann.recall(inputs)
             
-            print "Drive Speed:"
-            print wheels
+            # print "Drive Speed:"
+            # print wheels
 
             self.drive_speed(*wheels)
 
@@ -93,7 +93,14 @@ class BackProp(WebAnn):
 
 
 ann = AnnParser("ann/scripts/ann.ini").create_ann()
+
+
 # controller = WebAnn(ann, tempo = 1.0)
 controller = BackProp(ann)
+
+for i in ann.output_nodes:
+    for j in i.incomming:
+        print j.current_weight
+
 
 controller.run()
