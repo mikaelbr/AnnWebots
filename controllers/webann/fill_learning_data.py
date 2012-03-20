@@ -84,22 +84,6 @@ def find_object(data, length=200):
     case = [1]*(8) + [.1]*3 + [1, 1]
     data.extend([[case, [.5, -.5]] for i in range(length)])
 
-# for i in range(length/2):
-#         i = r(1, 0)
-#         o = r(1-i, 0, 1)
-#         case = [1]*(8) + [o, i] + [.1]*3
-
-#         if not(i == o == 0):
-#             data.append([case, [0, .5]])
-        
-#     for i in range(length/2):
-#         i = r(1, 0)
-#         o = r(1-i, 0, 1)
-#         case = [1]*(8) + [.1]*3 + [i, o]
-
-#         if not(i == o == 0):
-#             data.append([case, [.5, 0]])
-
 def fill_learning_data(filename, data):
 
     print time.time()
