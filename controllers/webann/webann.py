@@ -23,6 +23,7 @@ class WebAnn(epb.EpuckBasic):
 
         self.ann = ann
         self.ann.init_nodes()
+        self.ann.set_testing_mode()
 
         self.tempo = tempo   
 
@@ -92,11 +93,7 @@ class BackProp(WebAnn):
 
 
 ann = AnnParser("ann/scripts/ann.ini").create_ann()
-# ann.set_testing_mode()
 # controller = WebAnn(ann, tempo = 1.0)
-
-# ann = AnnParser("ann/scripts/learning.ini").create_ann()
 controller = BackProp(ann)
-
 
 controller.run()
