@@ -97,6 +97,6 @@ ann = AnnParser("ann/scripts/ann.ini").create_ann()
 
 # ann = AnnParser("ann/scripts/learning.ini").create_ann()
 controller = BackProp(ann)
-
+#controller = WebAnn(ann)
 
 controller.run()

@@ -137,7 +137,6 @@ class Link(object):
             if node.layer.type and node.layer.type.lower() == "decoder":
                 delta = targets[outputs.index(node)] - node.activation_level  
             else: delta = node._delta
-
             node._delta = node.layer.derivate(node) * delta
 
         # 2.
