@@ -63,7 +63,7 @@ class BackProp(WebAnn):
         Reading from a file with targets.
     """
 
-    def __init__(self, ann, tempo = 1.0, training_file = 'data/test.txt', epochs=5000):
+    def __init__(self, ann, tempo = 1.0, training_file = 'data/learning.txt', epochs=5000):
 
         super(BackProp, self).__init__(ann, tempo)
 
