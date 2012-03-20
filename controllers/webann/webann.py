@@ -92,6 +92,4 @@ controller = WebAnn(ann)
 for i in ann.output_nodes:
     for j in i.incomming:
         print j.current_weight
-
-
 controller.run()
