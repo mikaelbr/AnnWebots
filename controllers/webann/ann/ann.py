@@ -152,11 +152,7 @@ class Ann(object):
             no back propagation, using learning rules
         """
 
-        self.init_nodes()
-        self.set_input(inputs)
-
-        for layer in self.execution_order:
-            layer.update()
+        self.recall(inputs)
 
         for link in self.link_order_learn:
             link.learn()
@@ -165,11 +161,7 @@ class Ann(object):
 
     def backprop(self, inputs, targets):
         """Perform one epoch of incremental back propagation learning."""
-        self.init_nodes()
-        self.set_input(inputs)
-
-        for layer in self.execution_order:
-            layer.update()
+        self.recall(inputs)
 
         for link in self.link_order_learn:
             link.backprop(targets, self.output_nodes)
@@ -178,7 +170,8 @@ class Ann(object):
 
     def test(self, inputs, targets):
         """
-            Test without learning the inputs, returns the error.
+            Test without learning the inputs.
+            Returns error.
         """
 
         output = self.recall(inputs)

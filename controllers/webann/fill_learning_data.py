@@ -101,4 +101,4 @@ sway(data, 30)
 move_forward_data(data, 500)
 find_object(data, 250)
 
-fill_learning_data("data/test.txt", data)
+fill_learning_data("data/learning.txt", data)

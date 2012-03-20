@@ -122,14 +122,14 @@ class Layer(object):
             self.update(False) # Update
 
             # Get current activation levels..
-            curr = [node.activation_level for node in self.nodes]
+            current = [node.activation_level for node in self.nodes]
 
             # Check for changes
-            if prev == curr:
+            if current == prev:
                 break
             
             # Has changed. Run more
-            prev = curr
+            prev = current
 
     def derivate(self, node):
         """
@@ -149,7 +149,7 @@ class Layer(object):
             # Can't derivate descrete functions
             return 0.0        
 
-        # Linear and positive linear
+        # Linear 
         return 1.0
 
     def activation_function (self, inpt):

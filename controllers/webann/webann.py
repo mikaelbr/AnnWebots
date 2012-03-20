@@ -3,15 +3,8 @@
 
 import epuck_basic as epb
 from imagepro import *
-
-import random
-from ann.layer import *
-from ann.link import *
 from ann.ann import Ann
 from ann.parser import AnnParser
-from ann.ann_modules import Inhibitory
-
-import time
 
 # The webann is a descendent of the webot "controller" class, and it has the ANN as an attribute.
 class WebAnn(epb.EpuckBasic):
@@ -23,8 +16,9 @@ class WebAnn(epb.EpuckBasic):
 
         self.ann = ann
         self.ann.init_nodes()
+        self.ann.set_testing_mode()
 
-        self.tempo = tempo   
+        self.tempo = tempo
 
     def drive_speed(self, left=0, right=0):
         """
@@ -35,23 +29,21 @@ class WebAnn(epb.EpuckBasic):
 
     def run(self):
         
-        self.spin_angle(30)
-
         while True: # main loop
             dist = [max(-1, (1 - (i / 600))) for i in self.get_proximities()]
             cam = process_snapshot(self.snapshot(),color="green")
             inputs = dist + cam
 
-            print "Distance"
-            print dist
+            # print "Distance"
+            # print dist
 
-            print "Camera"
-            print cam
+            # print "Camera"
+            # print cam
 
             wheels = self.ann.recall(inputs)
             
-            print "Drive Speed:"
-            print wheels
+            # print "Drive Speed:"
+            # print wheels
 
             self.drive_speed(*wheels)
 
@@ -92,11 +84,12 @@ class BackProp(WebAnn):
 
 
 ann = AnnParser("ann/scripts/ann.ini").create_ann()
-# ann.set_testing_mode()
-# controller = WebAnn(ann, tempo = 1.0)
 
-# ann = AnnParser("ann/scripts/learning.ini").create_ann()
-controller = BackProp(ann)
-#controller = WebAnn(ann)
 
+controller = WebAnn(ann)
+# controller = BackProp(ann)
+
+for i in ann.output_nodes:
+    for j in i.incomming:
+        print j.current_weight
 controller.run()
